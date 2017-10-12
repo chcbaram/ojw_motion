@@ -1,5 +1,5 @@
 /**
- * HerkuleX2
+ * ojw_motion
  * A library for Dongbu HerkuleX Servo
  *
  * Copyright 2014 Dongbu Robot
@@ -24,8 +24,8 @@
 example )   sudo g++ -o testRun Test.cpp HerkuleX2.cpp HerkuleX2.h -lpthread -lwiringPi
 
  */
-#ifndef __HERKULEX2
-#define __HERKULEX2
+#ifndef __OJW_MOTION
+#define __OJW_MOTION
 
 
 // Jinwook On
@@ -39,7 +39,7 @@ example )   sudo g++ -o testRun Test.cpp HerkuleX2.cpp HerkuleX2.h -lpthread -lw
 typedef unsigned char byte;
 
 extern int m_nTty;				//file description
-//extern int m_anAxis_By_ID[_SIZE_MOTOR_MAX];
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ extern int m_nTty;				//file description
 // get : Control Algorithm & Architecture from Open Jig Ware 
 
 // Address
-#define _ADDRESS_TORQUE_CONTROL  			52
+#define _ADDRESS_TORQUE_CONTROL         			52
 #define _ADDRESS_LED_CONTROL  				53
 #define _ADDRESS_VOLTAGE  					54
 #define _ADDRESS_TEMPERATURE  				55
@@ -70,12 +70,12 @@ extern int m_nTty;				//file description
 #define _MODEL_DRS_0602 8
 #define _MODEL_DRS_0603 9
 
-#define _SIZE_MEMORY 256
-#define _SIZE_MOTOR_MAX 254
+#define _SIZE_MEMORY      256
+#define _SIZE_MOTOR_MAX   16
 
-#define _ID_BROADCASTING 254
+#define _ID_BROADCASTING  254
 
-//#define _FLAG_ENABLE 0x100
+
 
 
 #define _HEADER1 				0
@@ -112,12 +112,13 @@ typedef struct
     // Center position(Evd : Engineering value of degree)
     float fCenterPos;
 
-    float fOffsetAngle_Display; // º¸¿©Áö´Â È­¸é»óÀÇ °¢µµ Offset
+    float fOffsetAngle_Display; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Offset
 
     // gear ratio
     float fMechMove;
     float fDegree;
 }SParam_Axis_t;
+
 typedef struct 
 {
     bool bEn;
@@ -133,7 +134,7 @@ typedef struct
     float fLimitDn;    // Limit - 0: Ignore
 
     int nID;
-    //float fPos;
+
     int nPos;
     float fTime;
     float fSpeed;
@@ -177,19 +178,6 @@ typedef struct {
 	SMotionTable_t *pSTable;
 } SMotion_t;
 
-typedef struct 
-{
-	float pan;
-	float tilt;
-	float swing;
-}SAngle3D_t;
-
-typedef struct 
-{
-	float x;
-	float y;
-	float z;
-}SVector3D_t;
 
 typedef struct  			// Motor information
 {
@@ -206,15 +194,15 @@ typedef struct  			// Motor information
 	float fInitAngle2;               		// Init position which you want it(2'st)
 
 	// Interference Axis(No use)
-	int nInterference_Axis;          	// reserve(No use) - ÀÌ°Ô (-)°ªÀÌ¸é °£¼· Ãà ¾øÀ½.
-	float fW;                        		// reserve(No use) - Side ¿¡ ºÙÀº ÃàÀÇ Å©±â(³ÐÀÌ)
-	float fInterference_W;           	// reserve(No use) - °£¼·ÃàÀÌ ¾ÕµÚ·Î ºÙ¾ú´Ù°í °¡Á¤ÇÏ°í ÇØ´ç °£¼·ÃàÀÇ Å©±â(³ÐÀÌ)
+	int nInterference_Axis;          	// reserve(No use) - ï¿½Ì°ï¿½ (-)ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+	float fW;                        		// reserve(No use) - Side ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½)
+	float fInterference_W;           	// reserve(No use) - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ÕµÚ·ï¿½ ï¿½Ù¾ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½)
 
-	float fPos_Right;                		// reserve(No use) - ÃàÀÇ ¿À¸¥ÂÊ À§Ä¡
-	float fPos_Left;                 		// reserve(No use) - ÃàÀÇ ¿ÞÂÊ À§Ä¡
+	float fPos_Right;                		// reserve(No use) - ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+	float fPos_Left;                 		// reserve(No use) - ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 
-	float fInterference_Pos_Front;// reserve(No use) - ÇØ´ç °£¼·ÃàÀÇ ¾ÕÂÊ À§Ä¡
-	float fInterference_Pos_Rear;	// reserve(No use) - ÇØ´ç °£¼·ÃàÀÇ µÚÂÊ À§Ä¡
+	float fInterference_Pos_Front;// reserve(No use) - ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+	float fInterference_Pos_Rear;	// reserve(No use) - ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 
 	// NickName
 	char strNickName[_SIZE_STRING];              	// Nickname(32char)
@@ -228,209 +216,8 @@ typedef struct  			// Motor information
 	int nMotorControlType;           	// Motor Control type => 0: Position, 1: Speed type
 }SMotorInfo_t;
 
-#if 0
-class CDhParam
-{
-	 double dA;
-	 double dD;
-	 double dTheta;
-	 double dAlpha;
-	 int nAxisNum; // Motor Number(Similar with Virtual ID) : It means there is no motor when it use minus value(-)
-	 int nAxisDir; // 0 - Forward, 1 - Inverse
-
-	 CDhParam() // Constructor
-	{
-		dA = 0;
-		dD = 0;
-		dTheta = 0;
-		nAxisNum = -1;
-		nAxisDir = 0;
-		strCaption = "";
-	}
-
-	 string strCaption;
-	 void InitData()
-	{
-	    SetData(0, 0, 0, 0, -1, 0, "");
-	}
-	 void SetData(CDhParam OjwDhParam)
-	{
-	    SetData(OjwDhParam.dA, OjwDhParam.dD, OjwDhParam.dTheta, OjwDhParam.dAlpha, OjwDhParam.nAxisNum, OjwDhParam.nAxisDir, OjwDhParam.strCaption);
-	}
-	 void SetData(double dDh_a, double dDh_d, double dDh_theta, double dDh_alpha, int nDh_AxisNum, int nDh_AxisDir, string strDh_Caption)
-	{
-		dA = dDh_a;
-		dD = dDh_d;
-		dTheta = dDh_theta;
-		dAlpha = dDh_alpha;
-		nAxisNum = nDh_AxisNum;
-		nAxisDir = nDh_AxisDir;
-		strCaption = strDh_Caption;
-	}
-}
-class CDhParamAll
-{
-	CDhParam* pSDhParam;
-	int GetCount() { return (pSDhParam == NUKK) ? 0 : pSDhParam->Length; }
-	int m_nAxis_X = 0;
-	int m_nAxis_Y = 1;
-	int m_nAxis_Z = 2;
-	int[] m_pnDir = new int[3];
-	CDhParamAll() // Constructor
-	{
-		m_pnDir[0] = 0;
-		m_pnDir[1] = 0;
-		m_pnDir[2] = 0;
-	}
-	void SetAxis_XYZ(int nX, int nX_Dir, int nY, int nY_Dir, int nZ, int nZ_Dir) // Define Motor Axis Number(Default 0, 1, 2)
-	{
-		if (((nX * nX + nY * nY + nZ * nZ) == 5) && (((nX + 1) * (nY + 1) * (nZ + 1)) == 6))
-		{
-			if (((nX_Dir >= 0) && (nX_Dir <= 1)) && ((nY_Dir >= 0) && (nY_Dir <= 1)) && ((nZ_Dir >= 0) && (nZ_Dir <= 1)))
-			{
-				m_nAxis_X = nX; m_nAxis_Y = nY; m_nAxis_Z = nZ;
-				m_pnDir[m_nAxis_X] = nX_Dir;
-				m_pnDir[m_nAxis_Y] = nY_Dir;
-				m_pnDir[m_nAxis_Z] = nZ_Dir;
-			}
-		}
-	}
-	void GetAxis_XYZ(out int nX, out int nX_Dir, out int nY, out int nY_Dir, out int nZ, out int nZ_Dir)
-	{
-		nX = m_nAxis_X; nY = m_nAxis_Y; nZ = m_nAxis_Z;
-		nX_Dir = m_pnDir[m_nAxis_X];
-		nY_Dir = m_pnDir[m_nAxis_Y];
-		nZ_Dir = m_pnDir[m_nAxis_Z];
-	}
-	CDhParam GetData(int nIndex)
-	{
-		if ((nIndex >= pSDhParam.Length) || (nIndex < 0)) return null;
-		else return pSDhParam[nIndex];
-	}
-	bool SetData(int nIndex, CDhParam OjwDhParam)
-	{
-		if ((nIndex >= pSDhParam.Length) || (nIndex < 0)) return false;
-
-		pSDhParam[nIndex].SetData(OjwDhParam);
-		return true;
-	}
-	bool AddData(CDhParam OjwDhParam)
-	{
-		int nCnt = (pSDhParam == null) ? 1 : pSDhParam.Length + 1;
-		Array.Resize(ref pSDhParam, nCnt);
-		pSDhParam[nCnt - 1] = new CDhParam();
-		pSDhParam[nCnt - 1].SetData(OjwDhParam);
-
-		return true;
-	}
-	void DeleteAll()
-	{
-		if (pSDhParam != null)
-		{
-			for (int i = 0; i < pSDhParam.Length; i++)
-			    pSDhParam[i] = null;
-			Array.Resize(ref pSDhParam, 0);
-		}
-	}
-}
-class COjwDesignerHeader
-{
-	int nVersion;
-	char strVersion[6];
-
-	int nDefaultFunctionNumber = -1;
-
-	int nModelNum = 0;                               // The name of the actual model with the at least 1(Kor: 1 ÀÌ»óÀÇ °ªÀ» °¡Áö´Â ½ÇÁ¦ÀûÀÎ ¸ðµ¨ÀÇ ÀÌ¸§)
-	char strModelNum[256];               // 
-	char strModelName[256];
-
-	SAngle3D_t SInitAngle;// = new SAngle3D_t();        // The default angle facing the screen(Kor: È­¸éÀ» ¹Ù¶óº¸´Â ±âº» °¢µµ)
-	SVector3D_t SInitPos;// = new SVector3D_t();        // The default position of the object present in the screen(Kor: È­¸é³»¿¡ Á¸ÀçÇÏ´Â ¿ÀºêÁ§Æ®ÀÇ ±âº» À§Ä¡)
-
-	float fInitScale = 0.35f;                        // Size ratio in the initial screen(Kor: ÃÊ±â È­¸éÀÇ Å©±â ºñÀ²)
-
-	bool bDisplay_Light = true;                      // To use the light(Kor: ºûÀ» »ç¿ëÇÒ °ÍÀÎÁö...)
-	bool bDisplay_Invisible = false;                 // Transparent material, regardless of whether the ball(Kor: ÀçÁú°ú »ó°ü¾øÀÌ Åõ¸íÇÏ°Ô º¼ °ÍÀÎÁö...)
-	bool bDisplay_Axis = false;                      // Look what the reference axis(Kor: ±âÁØÃàÀ» º¸ÀÏ °ÇÁö)
-
-	long cBackColor;// = Color.FromArgb(-5658199);     // backgroud color(Kor: ¹è°æ »ö)
-
-	SMotorInfo_t aSMotorInfo[256];          // This limit is necessary because it reflects axes up to 256 axes(Kor: ¸®¹ÌÆ®°¡ ÇÊ¿äÇÑ ÃàÀº ÃÖ´ë 256Ãà ÀÌ¹Ç·Î ÀÌ¸¦ ¹Ý¿µ)
-
-	char astrGroupName[256];// = new string[512];          // Group name(Kor: ÁöÁ¤ÇÑ ±×·ìÀÇ ÀÌ¸§)
-	CDhParamAll pDhParamAll[512];// = new CDhParamAll[512]; // (0~255 Group)DH Param
-	int* pnSecret = new int[512];                   // 0: Normal, 1: Secret Letter
-	int* pnType = new int[512];                     // 0: Normal, 1: Wheel Control Type
-	bool* pbPython = new bool[512];                   // false: Normal, true: Python code
-	string* pstrKinematics = new string[512];
-	SEncryption_t* pSEncryptKinematics_encryption = new SEncryption_t[512];
-	string* pstrInverseKinematics = new string[512];
-	SEncryption_t* pSEncryptInverseKinematics_encryption = new SEncryption_t[512];
-
-	SOjwCode_t* pSOjwCode = new SOjwCode_t[512];
-
-	string strDrawModel;                                 // String that contains the actual data model(Kor: ½ÇÁ¦ ¸ðµ¨ µ¥ÀÌÅ¸°¡ µé¾îÀÖ´Â ½ºÆ®¸µ)
-	// The number of motors in internal (However, be sure to order 0,1,2, ... must be created in order)
-	// Kor: ³»ºÎ¿¡ µé¾îÀÖ´Â ¸ðÅÍÀÇ °¹¼ö ( ´Ü, ¹Ýµå½Ã ¼ø¼­´ë·Î 0,1,2,... ¼øÀ¸·Î ÀÛ¼ºÇØ¾ß ÇÑ´Ù. )
-	int nMotorCnt;
-
-	string strComment;                               // comment(Kor: ºÎ°¡¼³¸í)
-
-	int nWheelCounter_2 = 0;                         // The number of 2-wheel wheels(Kor: 2·û µð¹ÙÀÌ½ºÀÇ °³¼ö)
-	int nWheelCounter_3 = 0;                         // The number of 3-wheel wheels(Kor: 3·û µð¹ÙÀÌ½ºÀÇ °³¼ö)
-	int nWheelCounter_4 = 0;                         // The number of 4-wheel wheels(Kor: 4·û µð¹ÙÀÌ½ºÀÇ °³¼ö)
-/*
-	COjwDesignerHeader() // »ý¼ºÀÚ
-	{
-		SInitAngle.pan = -10.0f;
-		SInitAngle.tilt = 10.0f;
-		SInitAngle.swing = 0.0f;
-
-		SInitPos.x = 0.0f;
-		SInitPos.y = 0.0f;
-		SInitPos.z = 0.0f;
-
-		pSMotorInfo.Initialize();
-		for (int i = 0; i < 256; i++)
-		{
-			pSMotorInfo[i].nInterference_Axis = -1;
-
-			// Alloc memory(Kor: ¸Þ¸ð¸® È®º¸)
-			pDhParamAll[i] = new CDhParamAll();
-			pDhParamAll[i].DeleteAll();
-
-			pSMotorInfo[i].strNickName = "";
-
-			pstrGroupName[i] = "";
-			pstrKinematics[i] = "";
-			//pbyteKinematics_encryption
-			pstrInverseKinematics[i] = "";
-			//pbyteInverseKinematics_encryption
-
-			pSMotorInfo[i].nMotorID = i;
-			pSMotorInfo[i].fMechAngle = 330.0f;
-			pSMotorInfo[i].nMechMove = 1024;
-			pSMotorInfo[i].nCenter_Evd = 512;
 
 
-			pSEncryptKinematics_encryption[i].byteEncryption = new byte[0];
-			pSEncryptInverseKinematics_encryption[i].byteEncryption = new byte[0];
-		}
-		for (int i = 0; i < 256; i++)
-		{
-			pstrGroupName[256 + i] = "";
-			pstrKinematics[256 + i] = "";
-			pstrInverseKinematics[256 + i] = "";
-			pSEncryptKinematics_encryption[256 + i].byteEncryption = new byte[0];
-			pSEncryptInverseKinematics_encryption[256 + i].byteEncryption = new byte[0];
-		}
-		strDrawModel = "";
-		nMotorCnt = 0;
-		nDefaultFunctionNumber = -1; // No Choice
-	}*/
-}
-
-#endif
 class CMotor 
 {
 public:
@@ -535,9 +322,9 @@ public:
 	bool Get_Flag_Led_Blue(int nAxis);
 	bool Get_Flag_Led_Red(int nAxis);
 
-	void TimerSet();			// Timer »ý¼º
-	void TimerDestroy();		// Timer Destroy ( »ý¼ºÀ» ÇßÀ¸¸é ¹Ýµå½Ã Destroy¸¦ ÇÏµµ·Ï ÇÑ´Ù. )
-	unsigned long Timer();				// Timer »ý¼º ÈÄ ÇöÀç±îÁöÀÇ ½Ã°£ °ªÀ» return
+	void TimerSet();			// Timer ï¿½ï¿½ï¿½ï¿½
+	void TimerDestroy();		// Timer Destroy ( ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ Destroyï¿½ï¿½ ï¿½Ïµï¿½ï¿½ï¿½ ï¿½Ñ´ï¿½. )
+	unsigned long Timer();				// Timer ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ return
 
 	#define _TIME_MUL	1000
 	class CTimer
@@ -568,9 +355,9 @@ public:
 
 
 	CTimer m_CTmr_Motion;
-	long	m_lWaitActionTimer;	// ±âÁØ½Ã°£ Å¸ÀÌ¸Ó
-	char WaitAction_SetTimer();	// Çö ½ÃÁ¡À» Áß½ÉÀ¸·Î Å¸ÀÌ¸Ó¸¦ ÃÊ±âÈ­
-	char WaitAction_ByTimer(long t);	// WaitAction_SetTimer ÇÑ ½Ã°£ºÎÅÍ ÁöÁ¤½Ã°£ÀÌ ³Ñ¾ú´ÂÁö¸¦ Ã¼Å©. ³Ñ±â ±îÁö Wait
+	long	m_lWaitActionTimer;	// ï¿½ï¿½ï¿½Ø½Ã°ï¿½ Å¸ï¿½Ì¸ï¿½
+	char WaitAction_SetTimer();	// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸Ó¸ï¿½ ï¿½Ê±ï¿½È­
+	char WaitAction_ByTimer(long t);	// WaitAction_SetTimer ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å©. ï¿½Ñ±ï¿½ ï¿½ï¿½ï¿½ï¿½ Wait
 
 //#define _ADDRESS_TORQUE_CONTROL 			52
 //#define _ADDRESS_LED_CONTROL 				53
@@ -611,7 +398,7 @@ public:
 	//void FileOpen(const char *strFileName, COjwDesignerHeader *pCHeader);
 	void Motion_Play(const char *strFileName);
 	void PlayFrame(SMotionTable_t STable);
-	static void Write(byte *buffer, int nLength) { SendPacket(buffer, nLength); }
+	static void Write(byte *buffer, int nLength) {  }
 private:
 	
 	SMotion_t m_SMotion;
@@ -629,21 +416,10 @@ private:
 	
 	CTimer m_CTmr;
 
-//#define _TIMER_ARRAY
-#ifdef _TIMER_ARRAY
-	CTimer m_aCTmr_TimeOut[_SIZE_MOTOR_MAX];
-#else
+
 	CTimer m_CTmr_Timeout;
-#endif
-	pthread_t m_thReceive;
-	static void* Thread_Receive(void* arg);
-	static void* Thread_Socket(void* arg);
-	
-	static void SendPacket_Socket(byte *buffer, int nLength);
-	
-	static void SendPacket(byte *buffer, int nLength);
-	void Make_And_Send_Packet(int nID, int nCmd, int nDataByteSize, byte* pbytePacket);
-	void MakeCheckSum(int nAllPacketLength, byte* buffer);
+
+
 
 	int m_nModel;
 
@@ -653,14 +429,12 @@ private:
 	int m_nReadCnt;
 	int m_nMotorCnt;
 	int m_nMotorCnt_Back;
-	SParam_Axis_t m_aSParam_Axis[256];
+	SParam_Axis_t m_aSParam_Axis[_SIZE_MOTOR_MAX];
 	SMot_t m_aSMot[_SIZE_MOTOR_MAX];
 	SMot_t m_aSMot_Prev[_SIZE_MOTOR_MAX];
 	
 	char m_acEn[_SIZE_MOTOR_MAX];
-	//char m_acEn_For_Feedback[_SIZE_MOTOR_MAX];
 
-	//bool m_bOpen;
 	bool m_bStop;
 	bool m_bEms;
 	bool m_bStart;
