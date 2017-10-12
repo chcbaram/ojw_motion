@@ -58,7 +58,7 @@ SMotion_t m_SMotion;
 
 bool BinaryFileOpen(const char *strFileName, SMotion_t * pSMotion);
 uint8_t *BinaryFileLoad(const char *strFileName);
-
+void MainMotionInclude(const char *strFileName);
 
 
 
@@ -112,6 +112,7 @@ int main(int argc, char* argv[]) {
 
   BinaryFileOpen("test5dof.dmt", &m_SMotion);
 
+  MainMotionInclude("test5dof.dmt");
 
   pMotionBuffer = BinaryFileLoad("test5dof.dmt");
 
@@ -121,6 +122,13 @@ int main(int argc, char* argv[]) {
 
     if (MotionLoadHeader(&SMotion, pMotionBuffer) == true)
     {
+      printf("nFrameSize      \t %d\n", SMotion.SHeader.nFrameSize);
+      printf("nCommentSize    \t %d\n", SMotion.SHeader.nCommentSize);
+      printf("nCnt_LineComment\t %d\n", SMotion.SHeader.nCnt_LineComment);
+      printf("nPlayTime       \t %d\n", SMotion.SHeader.nPlayTime);
+      printf("nRobotModelNum  \t %d\n", SMotion.SHeader.nRobotModelNum);
+      printf("nMotorCnt       \t %d\n", SMotion.SHeader.nMotorCnt);
+
       for (int i=0; i<SMotion.SHeader.nFrameSize; i++)
       {
         MotionGetTable(&SMotion, i);
@@ -140,6 +148,62 @@ int main(int argc, char* argv[]) {
 }
 
 
+void MainMotionInclude(const char *strFileName)
+{
+  FILE *pfileAction;
+  char szFilename[256];
+  int file_size;
+
+  sprintf(szFilename, "%s", strFileName);
+  if ( ( pfileAction = fopen(szFilename, "rb") ) == NULL )
+  {
+    printf("[BinaryFileOpen] File[%s](Binary) open error\n", szFilename);
+    return;
+  }
+
+  fseek( pfileAction, 0, SEEK_END );
+  file_size = ftell( pfileAction );
+  fseek( pfileAction, 0, SEEK_SET );
+
+  uint8_t *pbyTmp = (byte *)malloc(sizeof(byte) * file_size);
+
+  fread(pbyTmp, sizeof(char), file_size, pfileAction);
+  fclose(pfileAction);
+
+
+
+  if ( ( pfileAction = fopen("ojw_dmt.h", "w") ) == NULL )
+  {
+    printf("[BinaryFileOpen] File[%s](Binary) open error\n", szFilename);
+    return;
+  }
+
+  fprintf(pfileAction, "uint8_t motion[%d] = \n", file_size);
+  fprintf(pfileAction, "{ \n");
+
+  for (int i=0; i<file_size; i++)
+  {
+    if (i < file_size-1)
+    {
+      fprintf(pfileAction, "0x%02X, ", pbyTmp[i]);
+    }
+    else
+    {
+      fprintf(pfileAction, "0x%02X ", pbyTmp[i]);
+    }
+
+    if (i%10 == 9)
+    {
+      fprintf(pfileAction, "\n");
+    }
+  }
+
+  fprintf(pfileAction, "\n}; \n");
+
+  free(pbyTmp);
+  fclose(pfileAction);
+  return;
+}
 
 
 
@@ -440,13 +504,6 @@ bool MotionLoadHeader(SMotionDB_t *pMotion, uint8_t *pData)
     pMotion->SHeader.nRobotModelNum   = (int)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
     pMotion->SHeader.nMotorCnt        = (int)(pData[nPos++]);
     // Size - MotionFrame, Comment, Caption, PlayTime
-
-    printf("nFrameSize      \t %d\n", pMotion->SHeader.nFrameSize);
-    printf("nCommentSize    \t %d\n", pMotion->SHeader.nCommentSize);
-    printf("nCnt_LineComment\t %d\n", pMotion->SHeader.nCnt_LineComment);
-    printf("nPlayTime       \t %d\n", pMotion->SHeader.nPlayTime);
-    printf("nRobotModelNum  \t %d\n", pMotion->SHeader.nRobotModelNum);
-    printf("nMotorCnt       \t %d\n", pMotion->SHeader.nMotorCnt);
   }
   else
   {
@@ -476,7 +533,7 @@ bool MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex)
   // 0-Index, 1-En, 2 ~ 24, 25 - speed, 26 - delay, 27,28,29,30 - Data0-3, 31 - time, 32 - caption
   for (int nAxis = 0; nAxis < nMotorCntMax; nAxis++)
   {
-    if (nAxis >= m_SMotion.nMotorCnt) nPos += 2;
+    if (nAxis >= pMotion->SHeader.nMotorCnt) nPos += 2;
     else if (nAxis >= pMotion->SHeader.nMotorCnt) pMotion->STable.pnMot[nAxis] = 0;
     else
     {
