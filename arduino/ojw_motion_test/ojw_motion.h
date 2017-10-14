@@ -77,7 +77,8 @@ public:
   void setMotionMotorCallback(bool (*motor_func)(SMotionHeader_t *p_header, SMotionTableDB_t *p_table));
 
   bool addMotionFile(uint16_t number, char *name,  uint8_t *motion_ptr);
-  bool playMotion(uint16_t number);
+  bool playMotion(int number);
+  bool playMotion(char *name);
 
 public:
   SMotionDB_t m_SMotion;

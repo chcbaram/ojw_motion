@@ -31,7 +31,8 @@ void loop() {
   if (Serial.available() > 0)
   {
     Serial.read();
-    ojw_motion.playMotion(0);
+    //ojw_motion.playMotion(0);
+    ojw_motion.playMotion("go");
   }
 }
 

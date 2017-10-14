@@ -136,6 +136,9 @@ int main(int argc, char* argv[]) {
       {
         MotionGetTable(&SMotion, i);
 
+        printf("nTime  : %d\n", SMotion.STable.nTime);
+        printf("nDelay : %d\n", SMotion.STable.nDelay);
+
         for (int nAxis = 0; nAxis < SMotion.SHeader.nMotorCnt; nAxis++)
         {
           printf("Mot[%d] = %d\n", nAxis, SMotion.STable.pnMot[nAxis]);
@@ -335,6 +338,7 @@ bool BinaryFileOpen(const char *strFileName, SMotion_t * pSMotion)
 
 
 
+
     printf("==Done(Frame Size = %d)==\r\n", pSMotion->nFrameSize);
 
 
@@ -350,7 +354,6 @@ bool BinaryFileOpen(const char *strFileName, SMotion_t * pSMotion)
     int nH = pSMotion->nFrameSize;
     int nData;
     short sData;
-
 
     nMemorySize = 35 + pSMotion->nMotorCnt * 2;//15 + 24;
     byte *pbyteData = (byte *)malloc(sizeof(byte) * nMemorySize);
@@ -374,6 +377,9 @@ bool BinaryFileOpen(const char *strFileName, SMotion_t * pSMotion)
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // #region Motor
         int nMotorCntMax = pSMotion->nMotorCnt;//(int)Math.Max(pSMotion->nMotorCnt, m_CHeader.nMotorCnt);
+
+
+
         // 0-Index, 1-En, 2 ~ 24, 25 - speed, 26 - delay, 27,28,29,30 - Data0-3, 31 - time, 32 - caption
         for (int nAxis = 0; nAxis < nMotorCntMax; nAxis++)
         {
@@ -400,6 +406,7 @@ bool BinaryFileOpen(const char *strFileName, SMotion_t * pSMotion)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         // #region Speed(2), Delay(2), Group(1), Command(1), Data0(2), Data1(2)
         // Speed

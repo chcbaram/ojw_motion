@@ -64,7 +64,32 @@ bool COjwMotion::addMotionFile(uint16_t number, char *name,  uint8_t *motion_ptr
   return ret;
 }
 
-bool COjwMotion::playMotion(uint16_t number)
+bool COjwMotion::playMotion(char *name)
+{
+  bool ret = true;
+  int16_t number = -1;
+  uint16_t i;
+
+
+  for (i=0; i<file_list.cnt; i++)
+  {
+    if (strcmp(file_list.p_node[i]->motion_name, name) == 0)
+    {
+      number = i;
+      break;
+    }
+  }
+
+  if (number >= 0)
+  {
+    playMotion(number);
+  }
+
+  return ret;
+}
+
+
+bool COjwMotion::playMotion(int number)
 {
   bool ret = true;
   int16_t index = -1;
