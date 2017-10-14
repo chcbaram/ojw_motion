@@ -107,14 +107,17 @@ bool MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex);
 SMotionDB_t SMotion;
 
 
+//char *file_name = "test5dof.dmt";
+char *file_name = "test.dmt";
+
 int main(int argc, char* argv[]) {
   uint8_t *pMotionBuffer;
 
-  BinaryFileOpen("test5dof.dmt", &m_SMotion);
+  BinaryFileOpen(file_name, &m_SMotion);
 
-  MainMotionInclude("test5dof.dmt");
+  MainMotionInclude(file_name);
 
-  pMotionBuffer = BinaryFileLoad("test5dof.dmt");
+  pMotionBuffer = BinaryFileLoad(file_name);
 
   if (pMotionBuffer != NULL)
   {
@@ -178,7 +181,7 @@ void MainMotionInclude(const char *strFileName)
     return;
   }
 
-  fprintf(pfileAction, "uint8_t motion[%d] = \n", file_size);
+  fprintf(pfileAction, "const uint8_t motion[%d] PROGMEM = \n", file_size);
   fprintf(pfileAction, "{ \n");
 
   for (int i=0; i<file_size; i++)

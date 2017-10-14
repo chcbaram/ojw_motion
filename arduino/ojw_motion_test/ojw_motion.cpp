@@ -80,8 +80,6 @@ bool COjwMotion::playMotion(uint16_t number)
     }
   }
 
-  Serial.println(index);
-
   if (index >= 0)
   {
     if (MotionLoadHeader(&m_SMotion, file_list.p_node[index]->p_motion_buf) == true)
@@ -110,16 +108,17 @@ bool COjwMotion::playMotion(uint16_t number)
   return ret;
 }
 
-
-
+#define PROG_MEM(x)    pgm_read_byte_near(&(x))
+//#define PROG_MEM(x)      x
 
 bool COjwMotion::MotionLoadHeader(SMotionDB_t *pMotion, uint8_t *pData)
 {
-
   pMotion->pData = pData;
 
-
-  memcpy(pMotion->SHeader.strVersion, &pData[0], sizeof(char) * 6);
+  for (int i=0; i<6; i++)
+  {
+    pMotion->SHeader.strVersion[i] = PROG_MEM(pData[i]);
+  }
 
   if (
     ( strncmp(_STR_EXT, pMotion->SHeader.strVersion, strlen(_STR_EXT)) != 0 ) &&
@@ -153,22 +152,24 @@ bool COjwMotion::MotionLoadHeader(SMotionDB_t *pMotion, uint8_t *pData)
 
   if (nVersion == 10)
   {
-    memcpy(pMotion->SHeader.strTableName, &pData[6], sizeof(char) * 21);
-
+    for (int i=0; i<21; i++)
+    {
+      pMotion->SHeader.strTableName[i] = PROG_MEM(pData[6+i]);
+    }
 
     // Start Position(1)
     int nPos = 27;
 
-    pMotion->SHeader.nStartPosition = (int)((pData[nPos] >= 0) ? pData[nPos] : 0);
+    pMotion->SHeader.nStartPosition = (int)((PROG_MEM(pData[nPos]) >= 0) ? PROG_MEM(pData[nPos]) : 0);
     nPos++;
     // MotionFrame(2), Comment(2), Caption(2), PlayTime(4), RobotModelNumber(2), MotorCnt(1)
     // Size
-    pMotion->SHeader.nFrameSize       = (int)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
-    pMotion->SHeader.nCommentSize     = (int)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
-    pMotion->SHeader.nCnt_LineComment = (int)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
-    pMotion->SHeader.nPlayTime        = (int)(pData[nPos] + pData[nPos + 1] * 256 + pData[nPos + 2] * 256 * 256 + pData[nPos + 3] * 256 * 256 * 256); nPos += 4;
-    pMotion->SHeader.nRobotModelNum   = (int)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
-    pMotion->SHeader.nMotorCnt        = (int)(pData[nPos++]);
+    pMotion->SHeader.nFrameSize       = (int)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
+    pMotion->SHeader.nCommentSize     = (int)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
+    pMotion->SHeader.nCnt_LineComment = (int)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
+    pMotion->SHeader.nPlayTime        = (int)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256 + PROG_MEM(pData[nPos + 2]) * 256 * 256 + PROG_MEM(pData[nPos + 3]) * 256 * 256 * 256); nPos += 4;
+    pMotion->SHeader.nRobotModelNum   = (int)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
+    pMotion->SHeader.nMotorCnt        = (int)(PROG_MEM(pData[nPos++]));
     // Size - MotionFrame, Comment, Caption, PlayTime
   }
   else
@@ -192,10 +193,17 @@ bool COjwMotion::MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex)
   nMemorySize = 35 + pMotion->SHeader.nMotorCnt * 2;
   nPos = 41 + nMemorySize * tableIndex;
 
-  int nEn = pData[nPos++];
+
+  int nEn = PROG_MEM(pData[nPos++]);
   pMotion->STable.bEn = ((nEn & 0x01) != 0) ? true : false;
 
   int nMotorCntMax = pMotion->SHeader.nMotorCnt;
+
+  if (pMotion->SHeader.nMotorCnt > OJW_MOTOR_MAX_COUNT )
+  {
+    nMotorCntMax = OJW_MOTOR_MAX_COUNT;
+  }
+
   // 0-Index, 1-En, 2 ~ 24, 25 - speed, 26 - delay, 27,28,29,30 - Data0-3, 31 - time, 32 - caption
   for (int nAxis = 0; nAxis < nMotorCntMax; nAxis++)
   {
@@ -203,7 +211,11 @@ bool COjwMotion::MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex)
     else if (nAxis >= pMotion->SHeader.nMotorCnt) pMotion->STable.pnMot[nAxis] = 0;
     else
     {
-      memcpy(&nData, &pData[nPos], sizeof(byte) * 2); nPos += 2;
+      //memcpy(&nData, &pData[nPos], sizeof(byte) * 2); nPos += 2;
+
+      nData  = PROG_MEM(pData[nPos+0]);
+      nData |= PROG_MEM(pData[nPos+1]) << 8;
+      nPos += 2;
 
       sData = (short)(nData & 0x0fff);
       if ((sData & 0x800) != 0) sData -= 0x1000;
@@ -223,22 +235,23 @@ bool COjwMotion::MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex)
 
   // #region Speed(2), Delay(2), Group(1), Command(1), Data0(2), Data1(2)
   // Speed
-  pMotion->STable.nTime = (int16_t)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
-
+  pMotion->STable.nTime = (int16_t)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
+  
+  
   // Delay
-  pMotion->STable.nDelay = (int16_t)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
+  pMotion->STable.nDelay = (int16_t)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
 
   // Group
-  pMotion->STable.nGroup = (uint8_t)(pData[nPos++]);
+  pMotion->STable.nGroup = (uint8_t)(PROG_MEM(pData[nPos++]));
 
   // Command
-  pMotion->STable.nCmd = (uint8_t)(pData[nPos++]);
+  pMotion->STable.nCmd = (uint8_t)(PROG_MEM(pData[nPos++]));
 
   // Data0
-  pMotion->STable.nData0 = (int16_t)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
+  pMotion->STable.nData0 = (int16_t)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
 
   // Data1
-  pMotion->STable.nData1 = (int16_t)(pData[nPos] + pData[nPos + 1] * 256); nPos += 2;
+  pMotion->STable.nData1 = (int16_t)(PROG_MEM(pData[nPos]) + PROG_MEM(pData[nPos + 1]) * 256); nPos += 2;
   //
   pMotion->STable.nData2 = 0; //nPos++;
   pMotion->STable.nData3 = 0; //nPos++;
@@ -248,4 +261,3 @@ bool COjwMotion::MotionGetTable(SMotionDB_t *pMotion, uint16_t tableIndex)
 
   return true;
 }
-

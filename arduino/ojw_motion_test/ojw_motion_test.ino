@@ -14,7 +14,9 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
-  motor[0].attach(9);
+  motor[0].attach(8);
+  motor[1].attach(9);
+
 
   // ojw 모션 설정 
   //
@@ -58,9 +60,9 @@ bool motionMotorFunc(SMotionHeader_t *p_header, SMotionTableDB_t *p_table)
   }
   Serial.println("---\n");
 
-  int val;
-  val = map(p_table->pnMot[1], 0, 1023, 0, 180);
-  motor[0].write(val);
 
+  motor[0].write(p_table->pnMot[0]);
+  motor[1].write(p_table->pnMot[1]);
+  
   return stop_motion;
 }
